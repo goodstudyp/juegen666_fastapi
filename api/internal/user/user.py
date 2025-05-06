@@ -9,7 +9,7 @@ from model.user import User
 from schemas.internal.user import CreateUserRequest, UserListItem, UpdateUserRequest
 from core.Exception import DatabaseException
 from typing import Optional
-from common.pagination import paginate_tortoise
+from common.pagination import get_paginated_response
 from fastapi import Depends
 from core.auth import get_admin_user
 from datetime import datetime
@@ -285,27 +285,13 @@ async def get_user_list(
         if sex is not None:
             filters["sex"] = sex
         
-        # 自定义数据转换函数，返回符合UserListItem格式的数据
-        # def transform_user(user):
-        #     return {
-        #         "id": user.id,
-        #         "username": user.username,
-        #         "nickname": user.nickname,
-        #         "user_type": user.user_type,
-        #         "user_status": user.user_status,
-        #         "user_phone": user.user_phone,
-        #         "user_email": user.user_email,
-        #         "avatar": user.avatar
-        #     }
-        
-        # 使用分页函数获取分页结果
-        pagination_result = await paginate_tortoise(
+        # 使用通用分页响应函数获取分页结果
+        pagination_result = await get_paginated_response(
             query_set=query,
             page=page,
             page_size=page_size,
-            # transform_func=transform_user,
-            filters=filters,
-            schema_model=UserListItem
+            schema_model=UserListItem,
+            filters=filters
         )
         
         return success_response(
